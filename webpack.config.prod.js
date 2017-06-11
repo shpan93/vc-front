@@ -14,7 +14,7 @@ module.exports = {
     admin: basicEntry.concat(['./admin/client.js']),
   },
   output: {
-    path: path.join(__dirname, 'public/assets/js/'),
+    path: path.join(__dirname, 'public'),
     filename: '[name]-main.js',
     publicPath: '/public/js',
   },

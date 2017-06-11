@@ -1,0 +1,13 @@
+vc-front:
+  build: .
+  ports:
+    - 8989:8080
+  volumes:
+    - /var/log/docker/vc-front:/usr/src/app/logs
+  environment:
+    NODE_ENV: 'production'
+  log_driver: syslog
+  log_opt:
+    tag: "{{.ImageName}}/{{.Name}}"
+    syslog-facility: local7
+  restart: always
