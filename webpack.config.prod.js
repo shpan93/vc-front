@@ -21,12 +21,12 @@ module.exports = {
 
   plugins: [
     new webpack.optimize.UglifyJsPlugin({
-      compressor: { warnings: false }
+      compressor: { warnings: false },
     }),
     new webpack.DefinePlugin({
-      "process.env": {
-        "NODE_ENV": JSON.stringify("production")
-      }
+      'process.env': {
+        'NODE_ENV': JSON.stringify('production'),
+      },
     }),
   ],
 
@@ -53,7 +53,7 @@ module.exports = {
         test: /\.scss$/,
         loader: 'style!css!sass',
       },
-    ]
+    ],
   },
   postcss: [autoprefixer({ browsers: ['last 50 versions'] })],
 };

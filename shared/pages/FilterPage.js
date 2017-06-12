@@ -125,17 +125,18 @@ class MainPage extends Component {
     const { multi } = this.state;
     if (multi) {
       this.setState({ multiValueTitle: valueSelect });
-      this.filterDataJustTitle(valueSelect);
+      // this.filterDataJustTitle(valueSelect);
     } else {
       // this.setState({ valueSelect });
     }
   }
-  filterDataJustTitle(valueSelect) {
+  filterDataJustTitle() {
     const { data } = this.props.data;
+    const { multiValueTitle } = this.state;
     const dataFilterTitle = [];
     data.map(dataCV => {
       const title = dataCV.title;
-      valueSelect.map(item => {
+      multiValueTitle.map(item => {
         if (item.value === title) {
           // found = true;
           dataFilterTitle.push(dataCV);
@@ -152,13 +153,14 @@ class MainPage extends Component {
     const { multi } = this.state;
     if (multi) {
       this.setState({ multiValueSkills: valueSelect });
-      this.filterDataJustSkills(valueSelect);
+      // this.filterDataJustSkills(valueSelect);
     } else {
       // this.setState({ valueSelect });
     }
   }
-  filterDataJustSkills(valueSelect) {
+  filterDataJustSkills() {
     const { data } = this.props.data;
+    const { multiValueSkills } = this.state;
     const dataFilterSkills = [];
     data.map(dataCV => {
       let found = false;
@@ -166,7 +168,7 @@ class MainPage extends Component {
         dataCV.skills.map(skill => {
           if (skill.main) {
             // mainSkills.push(skill.skill)
-            valueSelect.map(item => {
+            multiValueSkills.map(item => {
               if (item.value === skill.skill) {
                 found = true;
                 dataFilterSkills.push(dataCV);
@@ -184,19 +186,9 @@ class MainPage extends Component {
   }
   renderDustbins() {
     const { isShowSkillsFilter, filterDataSkills,
-      filterData, multiValueTitle, filterDataTitle, isUseFiler, sidebar } = this.state;
+      filterData, filterDataTitle, sidebar } = this.state;
 
     const { data, application } = this.props.data;
-    if (this.props.data.data) {
-      let dataSel;
-      if (!sidebar && !isShowSkillsFilter) {
-        dataSel = filterDataTitle;
-      } else if (!sidebar && isShowSkillsFilter) {
-        dataSel = filterDataSkills;
-      } else if (sidebar) {
-        dataSel = filterDataSkills;
-      }
-    }
     if (this.props.data.data) {
       let dataSel;
       if (!sidebar && !isShowSkillsFilter) {
@@ -231,10 +223,18 @@ class MainPage extends Component {
     }
     return null;
   }
+  showSidebar() {
+    this.setState({ sidebar: !this.state.sidebar });
+    this.filterDataJustSkills();
+  }
+  showSidebarWithTitle() {
+    this.setState({ sidebar: !this.state.sidebar });
+    this.filterDataJustTitle();
+  }
   renderSearchTitle() {
     const { optionsTitle } = this.props.data;
 
-    const { isShowSkillsFilter, multi, multiValueTitle } = this.state;
+    const { isShowSkillsFilter, multi, multiValueTitle, sidebar } = this.state;
     return (
       <div className="search-wr-inside">
         <Select
@@ -245,18 +245,32 @@ class MainPage extends Component {
           disabled={isShowSkillsFilter}
           placeholder={"Select Titles..."}
         />
+        {
+          !sidebar && (
+            <div
+              className="filter-btn"
+              onClick={() => {
+                return this.setState({
+                  isShowSkillsFilter: !this.state.isShowSkillsFilter,
+                });
+              }}
+            >
+              <span>{!isShowSkillsFilter ? 'Skills filter' : 'Close skill filter'}</span>
+            </div>
+          )
+        }
         <div
-          className="filter-btn"
-          onClick={() => {
-            return this.setState({
-              isShowSkillsFilter: !this.state.isShowSkillsFilter,
-            });
-          }}
+          // onClick={() => { return this.setState({ sidebar: !this.state.sidebar }); }}
+          onClick={this.state.isShowSkillsFilter ? null : ::this.showSidebarWithTitle}
+          className={`search-btn ${this.state.isShowSkillsFilter ? 'hidden' : ''}`}
         >
-          <span>Skills filter</span>
-        </div>
-        <div className="search-btn">
-          <span><i className="fa fa-search" aria-hidden="true" /></span>
+          {
+            !this.state.sidebar
+              ?
+              <span><i className="fa fa-search" aria-hidden="true" /></span>
+              :
+              <span><i className="fa fa-arrow" aria-hidden="true" />close</span>
+          }
         </div>
       </div>
     );
@@ -274,14 +288,24 @@ class MainPage extends Component {
           value={multiValueSkills}
           placeholder={"Select Skills..."}
         />
-        <div className="search-btn">
-          <span><i className="fa fa-search" aria-hidden="true" /></span>
+        <div
+          // onClick={() => { return this.setState({ sidebar: !this.state.sidebar }); }}
+          onClick={::this.showSidebar}
+          className="search-btn"
+        >
+          {
+            !this.state.sidebar
+              ?
+              <span><i className="fa fa-search" aria-hidden="true" /></span>
+              :
+              <span><i className="fa fa-arrow" aria-hidden="true" />close</span>
+          }
         </div>
       </div>
     );
   }
   render() {
-    const { filterData, isUseFiler } = this.state;
+    const { filterData, isUseFiler, isShowSkillsFilter, sidebar} = this.state;
     return (
       <div className={'page filter-page columns'}>
         <div className="dashboard-wr filter-page">
@@ -291,9 +315,7 @@ class MainPage extends Component {
                 <span>? FIQ</span>
               </div>
               <div className="header-title">
-                <h4
-                  onClick={() => { return this.setState({ sidebar: !this.state.sidebar }); }}
-                >Header</h4>
+                <h4>Header</h4>
               </div>
               <div className="header-contact">
                 <span>contact us <i className="fa fa-envelope-o" aria-hidden="true" /></span>
@@ -302,18 +324,20 @@ class MainPage extends Component {
 
             <div className="search-wr">
               {
-                this.state.sidebar && this.state.isShowSkillsFilter ? null : this.renderSearchTitle()
+                (sidebar && isShowSkillsFilter)
+                ? null : this.renderSearchTitle()
               }
-              
               {
-                this.state.isShowSkillsFilter && (
+                isShowSkillsFilter && (
                   this.renderSearchSkills()
                 )
               }
             </div>
           </div>
-          <div className="inside-wr">
-            <div className={`left-filter ${this.state.sidebar ? '' : 'hidden'}`}>
+          <div
+            className={`inside-wr ${isShowSkillsFilter && !sidebar ? 'with-filter-skill' : ''}`}
+          >
+            <div className={`left-filter ${sidebar ? '' : 'hidden'}`}>
               <div className="range-filter">
                 <h4>Monthly budget</h4>
                 <InputRange
@@ -335,7 +359,7 @@ class MainPage extends Component {
                   id={'radio-1'}
                   label={'1-3'}
                   name={'radio-group'}
-                  type={'radio'}
+                  type={'checkbox'}
                   defaultChecked={'checked'}
                   onChange={() => {
                     this.setState({
@@ -350,7 +374,7 @@ class MainPage extends Component {
                   id={'radio-2'}
                   label={'4-6'}
                   name={'radio-group'}
-                  type={'radio'}
+                  type={'checkbox'}
                   onChange={() => {
                     this.setState({
                       groupExperienceYear: 2,
@@ -364,7 +388,7 @@ class MainPage extends Component {
                   id={'radio-3'}
                   label={'6-9'}
                   name={'radio-group'}
-                  type={'radio'}
+                  type={'checkbox'}
                   onChange={() => {
                     this.setState({
                       groupExperienceYear: 3,
@@ -377,7 +401,7 @@ class MainPage extends Component {
                   id={'radio-4'}
                   label={'больше 9'}
                   name={'radio-group'}
-                  type={'radio'}
+                  type={'checkbox'}
                   onChange={() => {
                     this.setState({
                       groupExperienceYear: 4,
