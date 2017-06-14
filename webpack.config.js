@@ -10,7 +10,7 @@ const basicEntry = [
 ];
 
 module.exports = {
-  devtool: 'source-map',
+  devtool: 'eval',
   entry: {
     user: basicEntry.concat(['./user/client.js']),
     admin: basicEntry.concat(['./admin/client.js']),
@@ -42,16 +42,21 @@ module.exports = {
       { test: /\.eot$/, loader: 'file-loader' },
       { test: /\.svg$/, loader: 'file-loader' },
       { test: /\.png$/, loader: 'url-loader' },
-      {
-        test: /\.css$/,
-        loader: 'style!css',
-      },
-      {
-        test: /\.scss$/,
-        loader: 'style!css!sass',
-      },
+        {
+            test: /\.css$/,
+            use: [
+                'style-loader',
+                'css-loader',
+            ],
+        },
+        {
+            test: /\.scss$/,
+            use: [
+                'style-loader',
+                'css-loader',
+                'sass-loader',
+            ],
+        },
     ],
   },
-  postcss: [autoprefixer({ browsers: ['last 50 versions'] })],
-
 };

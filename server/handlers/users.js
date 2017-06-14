@@ -148,10 +148,10 @@ router.get('/:user_id', function (req, res) {
  });
  });*/
 
-router.post('/:id/contact', (req, res) => {
+router.post('/contact', (req, res) => {
     models.User.findAll({
         where: {
-            id: req.params.id,
+            id: req.body.userId,
         },
     }).then(function (result) {
         if (result.length === 0) {

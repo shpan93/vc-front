@@ -14,7 +14,7 @@ module.exports = {
     admin: basicEntry.concat(['./admin/client.js']),
   },
   output: {
-    path: path.join(__dirname, 'public'),
+    path: path.resolve(__dirname, './public/js'),
     filename: '[name]-main.js',
     publicPath: '/public/js',
   },
@@ -23,6 +23,9 @@ module.exports = {
     new webpack.optimize.UglifyJsPlugin({
       compressor: { warnings: false },
     }),
+  new ExtractTextPlugin({ filename: 'style.css',
+      allChunks: true,
+  }),
     new webpack.DefinePlugin({
       'process.env': {
         'NODE_ENV': JSON.stringify('production'),
@@ -45,16 +48,27 @@ module.exports = {
       { test: /\.eot$/, loader: 'file-loader' },
       { test: /\.svg$/, loader: 'file-loader' },
       { test: /\.png$/, loader: 'url-loader' },
-      {
-        test: /\.css$/,
-        loader: 'style!css',
-      },
-      {
-        test: /\.scss$/,
-        loader: 'style!css!sass',
-      },
+        {
+            test: /\.css$/,
+            use: ExtractTextPlugin.extract({ fallback: 'style-loader', use: 'css-loader' }),
+        },
+        {
+            test: /\.scss$/,
+            loader:
+                ExtractTextPlugin.extract({ fallback: 'style-loader',
+                    use: [
+                        'css-loader',
+                        {
+                            loader: 'postcss-loader',
+                            options: {
+                                plugins: () => {
+                                    return [autoprefixer({ browsers: ['> 1%', 'last 10 versions'] })];
+                                },
+                            },
+                        },
+                        'sass-loader'] }),
+        },
     ],
   },
-  postcss: [autoprefixer({ browsers: ['last 50 versions'] })],
 };
 
