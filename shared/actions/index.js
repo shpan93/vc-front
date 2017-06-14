@@ -1,5 +1,5 @@
 import * as types from '../constants/ActionTypes';
-import { getAllUsersAPI, sendMailInfoAPI,
+import { getAllUsersAPI, REQUEST_LETTER,
          getUserAPI, createUserAPI, updateUserAPI, deleteUserAPI, sendMailAPI } from './api';
 
 export function addDataBase(payload) {
@@ -55,6 +55,9 @@ export function deleteUser(userId) {
         // console.log('res delete', res);
         dispatch(getUsers());
       }
+    })
+    .catch((error) => {
+      console.log( error);
     });
   };
 }
@@ -65,14 +68,23 @@ export function letterSent(payload) {
     payload,
   };
 }
+export function requestLetter() {
+  return {
+    type: types.REQUEST_LETTER,
+  };
+}
 // SEND_MAIL to API
 export function sendMail(userId, clientMail) {
   return (dispatch) => {
+    dispatch(requestLetter());
     sendMailAPI(userId, clientMail).then(res => {
       if (res) {
         console.log('res sendMail', res);
-        dispatch(letterSent(res.statusText));
+        dispatch(letterSent(res));
       }
-    });
+    })
+      .catch((error) => {
+        console.log('catch send error', error);
+      });
   };
 }

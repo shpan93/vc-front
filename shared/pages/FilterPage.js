@@ -9,6 +9,7 @@ import Select from 'react-select';
 
 import RadioButton from '../components/RadioButton/RadioButton';
 import PreViewCv from '../components/CV/PreViewCv';
+import Header from '../components/Header/Header';
 
 
 class MainPage extends Component {
@@ -30,6 +31,21 @@ class MainPage extends Component {
       multiValueTitle: [],
       multiValueSkills: [],
       isShowSkillsFilter: false,
+      groupsExp: [],
+      groupsExpSelect: [
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+      ],
     };
   }
 
@@ -89,10 +105,19 @@ class MainPage extends Component {
     this.filterDataExperience(dataFilterCost);
   }
   filterDataExperience(dataFilterCost) {
-    const group = this.state.groupExperienceYear;
-    const dataFilterExperience = dataFilterCost.filter((item) => {
-      const exp = parseInt(item.experience, 10);
-      return exp >= (group * 3 - 3) && exp <= group * 3;
+    // const group = this.state.groupExperienceYear;
+    const groups = this.state.groupsExp;
+    const dataFilterExperience = [];
+    groups.map((group) => {
+      const filterGroup = dataFilterCost.filter((item) => {
+        const exp = parseInt(item.experience, 10);
+        return exp >= (group * 3 - 3) && exp <= group * 3;
+      });
+      filterGroup.map((item) => {
+        dataFilterExperience.push(item);
+        return null;
+      });
+      return null;
     });
     this.setState({ filterData: dataFilterExperience, clearFilter: false });
   }
@@ -105,7 +130,46 @@ class MainPage extends Component {
       multiValue: [],
       valueCost: { min: 1000, max: 3000 },
       sideBar: true,
+      groupsExp: [],
+      groupsExpSelect: [
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+        {
+          check: false,
+        },
+      ],
     });
+  }
+  selectGroup(group) {
+    // console.log('groupExp', group);
+    const groups = this.state.groupsExp;
+    let isSelect = false;
+    const newGroups = [];
+    groups.map(item => {
+      if (item === group) {
+        isSelect = true;
+      } else {
+        newGroups.push(item);
+      }
+      return null;
+    });
+    if (isSelect === false) {
+      newGroups.push(group);
+    }
+    /* const filterGroup = groups.filter((item) => {
+      return item !== group;
+    });*/
+    const arrSelect = this.state.groupsExpSelect;
+    // const selectBox = this.state.groupsExpSelect[group];
+    arrSelect[group - 1].check = !arrSelect[group - 1].check;
+    this.setState({ groupsExp: newGroups, groupsExpSelect: arrSelect });
   }
   goToAdmin() {
     this.props.push('/DashBoard');
@@ -208,7 +272,7 @@ class MainPage extends Component {
       }
       return dataSel.map((item, i) => {
         return (
-          <Link key={`task-${i}`} to={`/task/${item.id}`}>
+          <Link key={`cv-${i}`} to={`/cv/${item.id}`}>
             <PreViewCv
               item={item}
               key={i}
@@ -236,7 +300,9 @@ class MainPage extends Component {
 
     const { isShowSkillsFilter, multi, multiValueTitle, sidebar } = this.state;
     return (
-      <div className="search-wr-inside">
+      <div
+        className={`search-wr-inside titles-search ${sidebar ? 'sidebar' : ''}`}
+      >
         <Select
           multi={multi}
           options={optionsTitle}
@@ -260,7 +326,6 @@ class MainPage extends Component {
           )
         }
         <div
-          // onClick={() => { return this.setState({ sidebar: !this.state.sidebar }); }}
           onClick={this.state.isShowSkillsFilter ? null : ::this.showSidebarWithTitle}
           className={`search-btn ${this.state.isShowSkillsFilter ? 'hidden' : ''}`}
         >
@@ -279,7 +344,7 @@ class MainPage extends Component {
     const { options } = this.props.data;
     const { multiValueSkills, multi } = this.state;
     return (
-      <div className="search-wr-inside">
+      <div className="search-wr-inside skills-search">
         <Select
           multi={multi}
           options={options}
@@ -304,23 +369,90 @@ class MainPage extends Component {
       </div>
     );
   }
+  renderRangeFilter() {
+    return (
+      <div className="range-filter">
+        <h4>Monthly budget</h4>
+        <InputRange
+          maxValue={5000}
+          minValue={500}
+          value={this.state.valueCost}
+          onChange={valueCost => { return this.setState({ valueCost }); }}
+        />
+        <div className="filter-cost">
+          <span>from: {`$${this.state.valueCost.min}`}</span>
+          <span>to: {`$${this.state.valueCost.max}`}</span>
+        </div>
+      </div>
+    );
+  }
+  renderRangeExperience() {
+    return (
+      <div className="experience-year">
+        <h4>Years experience</h4>
+        <RadioButton
+          fieldName={"experience"}
+          value={this.state.isMain}
+          id={'radio-1'}
+          label={'1-3'}
+          name={'radio-group'}
+          type={'checkbox'}
+          defaultChecked={this.state.groupsExpSelect[0].check ? 'checked' : ''}
+          onChange={() => {
+            this.selectGroup(1);
+          }}
+          /* onChange={() => {
+           this.setState({
+           groupExperienceYear: 1,
+           });
+           }}*/
+        />
+        <RadioButton
+          fieldName={"experience"}
+          value={this.state.isMain}
+          id={'radio-2'}
+          label={'4-6'}
+          name={'radio-group'}
+          type={'checkbox'}
+          defaultChecked={this.state.groupsExpSelect[1].check ? 'checked' : ''}
+          onChange={() => {
+            this.selectGroup(2);
+          }}
+        />
+        <RadioButton
+          fieldName={"experience"}
+          value={this.state.isMain}
+          id={'radio-3'}
+          label={'6-9'}
+          name={'radio-group'}
+          type={'checkbox'}
+          defaultChecked={this.state.groupsExpSelect[2].check ? 'checked' : ''}
+          onChange={() => {
+            this.selectGroup(3);
+          }}
+        />
+        <RadioButton
+          fieldName={"experience"}
+          value={this.state.isMain}
+          id={'radio-4'}
+          label={'9-12'}
+          name={'radio-group'}
+          type={'checkbox'}
+          defaultChecked={this.state.groupsExpSelect[3].check ? 'checked' : ''}
+          onChange={() => {
+            this.selectGroup(4);
+          }}
+        />
+      </div>
+    );
+  }
   render() {
-    const { filterData, isUseFiler, isShowSkillsFilter, sidebar} = this.state;
+    const { filterData, isUseFiler, isShowSkillsFilter, sidebar } = this.state;
     return (
       <div className={'page filter-page columns'}>
         <div className="dashboard-wr filter-page">
           <div className="header-wr">
-            <div className="header">
-              <div className="header-fiq">
-                <span>? FIQ</span>
-              </div>
-              <div className="header-title">
-                <h4>Header</h4>
-              </div>
-              <div className="header-contact">
-                <span>contact us <i className="fa fa-envelope-o" aria-hidden="true" /></span>
-              </div>
-            </div>
+            <Header />
 
             <div className="search-wr">
               {
@@ -338,78 +470,8 @@ class MainPage extends Component {
             className={`inside-wr ${isShowSkillsFilter && !sidebar ? 'with-filter-skill' : ''}`}
           >
             <div className={`left-filter ${sidebar ? '' : 'hidden'}`}>
-              <div className="range-filter">
-                <h4>Monthly budget</h4>
-                <InputRange
-                  maxValue={5000}
-                  minValue={500}
-                  value={this.state.valueCost}
-                  onChange={valueCost => { return this.setState({ valueCost }); }}
-                />
-                <div className="filter-cost">
-                  <span>from: {`$${this.state.valueCost.min}`}</span>
-                  <span>to: {`$${this.state.valueCost.max}`}</span>
-                </div>
-              </div>
-              <div className="experience-year">
-                <h4>Years experience</h4>
-                <RadioButton
-                  fieldName={"experience"}
-                  value={this.state.isMain}
-                  id={'radio-1'}
-                  label={'1-3'}
-                  name={'radio-group'}
-                  type={'checkbox'}
-                  defaultChecked={'checked'}
-                  onChange={() => {
-                    this.setState({
-                      groupExperienceYear: 1,
-                    });
-                  }}
-                  /* errorText={this.showError('isMain')}*/
-                />
-                <RadioButton
-                  fieldName={"experience"}
-                  value={this.state.isMain}
-                  id={'radio-2'}
-                  label={'4-6'}
-                  name={'radio-group'}
-                  type={'checkbox'}
-                  onChange={() => {
-                    this.setState({
-                      groupExperienceYear: 2,
-                    });
-                  }}
-                  /* errorText={this.showError('isMain')}*/
-                />
-                <RadioButton
-                  fieldName={"experience"}
-                  value={this.state.isMain}
-                  id={'radio-3'}
-                  label={'6-9'}
-                  name={'radio-group'}
-                  type={'checkbox'}
-                  onChange={() => {
-                    this.setState({
-                      groupExperienceYear: 3,
-                    });
-                  }}
-                />
-                <RadioButton
-                  fieldName={"experience"}
-                  value={this.state.isMain}
-                  id={'radio-4'}
-                  label={'больше 9'}
-                  name={'radio-group'}
-                  type={'checkbox'}
-                  onChange={() => {
-                    this.setState({
-                      groupExperienceYear: 4,
-                    });
-                  }}
-                  /* errorText={this.showError('isMain')}*/
-                />
-              </div>
+              {this.renderRangeFilter()}
+              {this.renderRangeExperience()}
               <div className="bottom-control">
                 <div className="clear" onClick={::this.filterClear}>
                   <span>
@@ -422,7 +484,9 @@ class MainPage extends Component {
                 </div>
               </div>
             </div>
-            <div className="lists-wr">
+            <div
+              className={`lists-wr ${sidebar ? 'with-sidebar' : ''}`}
+            >
               {this.renderDustbins()}
               {
                 !(filterData.length > 0) && isUseFiler && (

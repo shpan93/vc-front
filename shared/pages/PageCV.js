@@ -6,6 +6,7 @@ import { getUser, sendMail, letterSent } from '../actions';
 // import MAIL_REG from '../constants/regExp';
 import ViewCv from '../components/CV/ViewCv';
 import TextField from '../components/TextField/TextField';
+import Header from '../components/Header/Header';
 
 class PageCV extends Component {
   static propTypes = {
@@ -18,7 +19,9 @@ class PageCV extends Component {
     children: React.PropTypes.any,
     data: React.PropTypes.object,
     application: React.PropTypes.string,
-    sent: React.PropTypes.string,
+    sentText: React.PropTypes.string,
+    sent: React.PropTypes.object,
+    sending: React.PropTypes.bool,
   };
 
   constructor(props) {
@@ -38,12 +41,20 @@ class PageCV extends Component {
       errorMessages: {
         mail: 'Mail is required (need real email)',
       },
+      sending: false,
     };
   }
   sendMail() {
     const userId = this.props.user.id;
-    const clientMail = this.state.mail;
-    this.props.sendMail(userId, clientMail);
+    const clientInfo = {
+      mailClient: this.state.mail,
+      nameClient: null,
+      companyClient: null,
+      countryClient: null,
+      cityClient: null,
+      descriptionClient: null,
+    };
+    this.props.sendMail(userId, clientInfo);
   }
   handleInputChange(target, e) {
     this.updateValue(target, e.target.value.toString());
@@ -83,32 +94,29 @@ class PageCV extends Component {
   renderHeader() {
     return (
       <div className="header-wr">
-        <div className="header">
-          <div className="header-fiq">
-            <span>? FIQ</span>
-          </div>
-          <div className="header-title">
-            <h4>Header</h4>
-          </div>
-          <div className="header-contact">
-            <span>contact us <i className="fa fa-envelope-o" aria-hidden="true" /></span>
-          </div>
-        </div>
+        <Header />
       </div>
     );
   }
   renderPopup() {
-    const sent = this.props.sent;
+    const { sending, sentText } = this.props;
     return (
       <div>
         <div className={`bg-popup ${this.state.openPopup ? '' : 'hidden'}`} />
         <div className={`popup-send-mail ${this.state.openPopup ? 'anim-popup' : 'hidden'}`}>
+          {
+            sending && sending === true && (
+              <div className="preload">
+                <img src="../assets/images/preloader.GIF" alt="preload" />
+              </div>
+            )
+          }
           <p className="header-send">
             <span>Enter your email</span>
           </p>
           <div className="body-send">
             <div
-              className={`input-wr ${sent === 'OK' ? 'success' : ''}`}
+              className={'input-wr '}
             >
               <TextField
                 classNameBox={'input-wr'}
@@ -120,15 +128,21 @@ class PageCV extends Component {
                 errorText={this.showError('mail')}
               />
             </div>
+            <p className="info-text">
+              <span className="">Your email will be neither shared,
+                sold nor rented to any third party for commercial reasons
+                <a href="" target="_blank"> read more</a>
+              </span>
+            </p>
             <div className="send-message">
               {
-                (sent === 'OK') && (
-                  <p className="success-test">Лист відправлено!</p>
+                (sentText && sentText === 'OK') && (
+                  <p className="success-test">Your letter sent</p>
                 )
               }
               {
-                (sent && sent !== 'OK') && (
-                  <p className="unsuccess-test">Виникла помилка!</p>
+                (sentText && sentText !== 'OK') && (
+                  <p className="unsuccess-test">We have some problem</p>
                 )
               }
             </div>
@@ -148,10 +162,14 @@ class PageCV extends Component {
       </div>
     );
   }
-  goToMainSendMail() {
-    this.props.push('/SendPage');
-  }
+
   renderFooter() {
+    const { user } = this.props;
+    let cvId;
+    if (user) {
+      cvId = user.id;
+    }
+
     return (
       <div className="footer-task">
         <div className="footer-wr">
@@ -162,10 +180,13 @@ class PageCV extends Component {
             <span>Send me to email</span>
           </div>
           <div
-            onClick={::this.goToMainSendMail}
+            // onClick={::this.goToMainSendMail}
             className="proc-btn"
           >
-            <span>Proceed to Request</span>
+            <Link className="" to={`/send/${cvId || ''}`}>
+              <span>Proceed to Request</span>
+            </Link>
+
           </div>
         </div>
       </div>
@@ -183,7 +204,7 @@ class PageCV extends Component {
                 <div className="task-header">
                   <Link className="left-part" to={`/${base}`}>
                     <div className="icon-back">
-                      <i className="fa fa-angle-left" aria-hidden="true" />
+                      <i className="fa fa-arrow-left" aria-hidden="true" />
                     </div>
                     <span>Back to board</span>
                   </Link>
@@ -236,17 +257,21 @@ class PageCV extends Component {
 export default connect(
   (state, ownProps) => {
     if (state.data && state.data.data && state.data.data.length > 0) {
-      const user = state.data.data.find(u => u.id === parseInt(ownProps.params.taskId, 10));
+      const user = state.data.data.find(u => u.id === parseInt(ownProps.params.cvId, 10));
       if (user) {
         return {
           user,
           application: state.data.application,
-          sent: state.data.sent || '',
+          sent: state.data.sent || { status: '' },
+          sentText: state.data.sentText || '',
+          sending: state.data.sending || false,
         };
       }
       return {
         application: state.data.application,
-        sent: state.data.sent || '',
+        sent: state.data.sent || { status: '' },
+        sentText: state.data.sentText || '',
+        sending: state.data.sending || false,
       };
     }
     return {};
